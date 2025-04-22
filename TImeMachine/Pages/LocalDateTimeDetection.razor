@@ -1,0 +1,105 @@
+﻿@page "/localdatetimedetection"
+@inject IJSRuntime JS
+
+<h3>Frontend Local Time Detection & Display</h3>
+
+<div class="form-group p-1">
+    <label for="dateInput">Select Date Time:</label>
+    <input type="date" id="dateInput" class="form-control" @bind="selectedDate" disabled />
+</div>
+
+<div class="form-group p-1">
+    <label for="timeInput">Select Time:</label>
+    <input type="time" id="timeInput" class="form-control" @bind="selectedTime" disabled />
+</div>
+
+<div class="form-group p-1">
+    <label for="timezoneSelect">Select TimeZone:</label>
+    <select id="timezoneSelect" class="form-control" @bind="selectedTimeZone" disabled>
+        <option value="">Select a Timezone</option>
+        @foreach (var timezone in timeZones)
+        {
+            <option value="@timezone.Id">@timezone.DisplayName</option>
+        }
+    </select>
+</div>
+
+<button class="btn btn-primary mt-2" @onclick="handleGoClick">GO</button>
+
+@if (!string.IsNullOrEmpty(resultMessage))
+{
+    <div class="alert alert-info mt-3">@resultMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private DateOnly? selectedDate = DateOnly.FromDateTime(DateTime.UtcNow);
+    private TimeOnly? selectedTime = TimeOnly.FromDateTime(DateTime.UtcNow);
+    private string selectedTimeZone = string.Empty;
+    private string resultMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private List<TimeZoneInfo> timeZones = TimeZoneInfo.GetSystemTimeZones().ToList();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            selectedTimeZone = await JS.InvokeAsync<string>("getBrowserTimeZone");
+            StateHasChanged();
+        }
+    }
+
+    private void handleGoClick()
+    {
+        // empty the resultMessage and errorMessage
+        resultMessage = string.Empty;
+        errorMessage = string.Empty;
+
+        // Check if both the time and timezone is selected
+        if (!selectedDate.HasValue || !selectedTime.HasValue || string.IsNullOrEmpty(selectedTimeZone))
+        {
+            errorMessage = "Please select all date, time and a timezone";
+            return;
+        }
+
+        try
+        {
+            // find the selected TImeZone
+            var timezoneInfo = timeZones.FirstOrDefault(tz => tz.Id == selectedTimeZone);
+            if (timezoneInfo == null)
+            {
+                errorMessage = "Invalid TimeZone Selected.";
+                return;
+            }
+
+            // combine the date and time
+            var utcDateTime = DateTime.SpecifyKind(
+                new DateTime(
+                    selectedDate.Value.Year,
+                    selectedDate.Value.Month,
+                    selectedDate.Value.Day,
+                    selectedTime.Value.Hour,
+                    selectedTime.Value.Minute,
+                    0
+                ), 
+                DateTimeKind.Utc
+            );
+
+            // convert utc to local date time of the client
+            var localDateTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timezoneInfo);
+
+            resultMessage = $"Local Time: {localDateTime:yyyy-MM-dd hh:mm tt} ({timezoneInfo.DisplayName})\n" +
+                            $"UTC Time: {utcDateTime:yyyy-MM-dd hh:mm tt} UTC";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error converting to UTC: {ex.Message}";
+        }
+
+    }
+}
