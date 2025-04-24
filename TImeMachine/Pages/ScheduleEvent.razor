@@ -1,0 +1,56 @@
+﻿@page "/schedule-event"
+
+<h3>Book an Event</h3>
+
+<div class="row py-1">
+    <div class="col-6">
+        <div class="form-group">
+            <label for="title">Name</label>
+            <input type="text" id="title" name="title" class="form-control" required />
+        </div>
+    </div>
+</div>
+
+<div class="row py-1">
+    <div class="col-8">
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea rows="10" cols="10" id="description" name="description" class="form-control" ></textarea>
+        </div>
+    </div>
+</div>
+
+<div class="row py-1">
+    <div class="col-6">
+        <div class="form-group">
+            <label for="dateInput">Select Date Time:</label>
+            <input type="date" id="dateInput" class="form-control" />
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="form-group">
+            <label for="timeInput">Select Time:</label>
+            <input type="time" id="timeInput" class="form-control" />
+        </div>
+    </div>
+</div>
+
+<div class="row py-1">
+    <div class="col-6">
+        <span class="text-danger">If the timezone is not auto-selected from your computer, than you can select from the dropdown list</span>
+        <div class="form-group">
+            <label for="timezoneSelect">Select Timezone</label>
+            <select id="timezoneSelect" name="timezoneSelect" class="form-control">
+                <option value="">Select TimeZone</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid d-flex justify-content-end py-1">
+    <button class="btn btn-primary">GO</button>
+</div>
+
+@code {
+
+}
